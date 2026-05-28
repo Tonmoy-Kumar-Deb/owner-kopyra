@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Owner App</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<style>
+.danger{background:#dc2626}
+
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Poppins',sans-serif}
+body{
+  margin:0;
+  background:linear-gradient(135deg,#0f172a,#1e293b,#312e81);
+  color:#fff;
+  min-height:100vh;
+  display:flex;
+  flex-direction:column;
+}
+
+.app{
+  flex:1;
+  overflow-y:auto;
+  padding-top:80px;
+  padding-bottom:160px;
+  padding-left:16px;
+  padding-right:16px;
+  box-sizing:border-box;
+}
+.nav{
+  position:fixed;
+  bottom:10px;
+  left:10px;
+  right:10px;
+  display:flex;
+  gap:10px;
+  background:rgba(255,255,255,.08);
+  padding:10px;
+  border-radius:18px;
+  backdrop-filter:blur(12px);
+  z-index:9999;
+}
+#settings{
+  padding-bottom:200px;
+}
+.nav button{flex:1;border:none;border-radius:12px;padding:12px 14px;color:#fff;background:transparent;font-weight:700;cursor:pointer}
+.nav button.active{
+  background:linear-gradient(135deg,#2563eb,#1d4ed8);
+  transform:scale(1.05);
+}
+.section{
+  opacity:0;
+  transform:translateY(10px);
+  transition:0.25s ease;
+}
+
+.section.active{
+  opacity:1;
+  transform:translateY(0);
+}
+.topbar{display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin-bottom:14px}
+.title{font-size:22px;font-weight:700}
+.search{width:100%;max-width:420px;padding:13px 15px;border:none;outline:none;border-radius:14px;background:rgba(255,255,255,.12);color:#fff}
+.search::placeholder{color:rgba(255,255,255,.7)}
+.stats{font-size:13px;opacity:.85}
+.status-wrap{
+  display:flex;
+  gap:14px;
+  overflow-x:auto;
+  padding-bottom:10px;
+  scroll-snap-type:x mandatory;
+  scroll-behavior:smooth;
+  -webkit-overflow-scrolling:touch;
+}
+
+.status-wrap::-webkit-scrollbar{
+  height:6px;
+}
+
+.status-wrap::-webkit-scrollbar-thumb{
+  background:rgba(255,255,255,.2);
+  border-radius:10px;
+}
+.status-col{
+  background:rgba(255,255,255,.06);
+  border:1px solid rgba(255,255,255,.08);
+  border-radius:18px;
+  padding:12px;
+  min-height:120px;
+
+  flex:0 0 auto;
+  min-width:280px;
+  scroll-snap-align:start;
+}
+.status-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.status-head h3{font-size:16px}
+.count{font-size:12px;opacity:.8}
+.cards{display:grid;gap:12px}
+.card{
+  transition:0.2s;
+}
+
+.card:hover{
+  transform:translateY(-3px);
+  border-color:rgba(255,255,255,.25);
+}
+.card-top{display:flex;gap:10px;align-items:center}
+.logo{width:46px;height:46px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#38bdf8,#8b5cf6);font-weight:800;flex-shrink:0}
+.meta{flex:1;min-width:0}
+.meta h4{font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.code{font-size:12px;color:#38bdf8;word-break:break-word}
+.badges{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.badge{padding:6px 10px;border-radius:999px;background:rgba(255,255,255,.10);font-size:12px}
+.actions{display:flex;gap:8px;margin-top:12px}
+.actions button{flex:1;border:none;border-radius:12px;padding:11px;color:#fff;font-weight:700;cursor:pointer}
+.i-btn{background:#2563eb}.h-btn{background:#f59e0b}.s-btn{background:#ec4899}
+.empty{padding:30px 10px;text-align:center;opacity:.75}
+.box{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.1);border-radius:18px;padding:14px;margin-bottom:14px}
+.toast {
+  position: fixed;
+  bottom: 100px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, .8);
+  color: #fff;
+  padding: 12px 18px;
+  border-radius: 12px;
+  font-size: 14px;
+  display: none;
+  z-index: 99999;
+}
+.row{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px}
+label{display:block;font-size:12px;opacity:.8;margin:2px 0 6px}
+input,select,textarea{width:100%;padding:12px 13px;border:none;outline:none;border-radius:12px;background:rgba(255,255,255,.12);color:#fff}
+textarea{min-height:90px;resize:vertical}
+option{background:#1e293b;color:#fff}
+.btn{border:none;border-radius:12px;padding:12px 14px;color:#fff;font-weight:700;cursor:pointer}
+.primary{background:#16a34a}.secondary{background:#475569}.danger{background:#dc2626}
+.small{font-size:12px;opacity:.8}
+.overlay{
+  pointer-events: auto;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.65);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 999999;
+}
+.modal{
+  width:100%;
+  max-width:620px;
+  max-height:90vh;
+  overflow:auto;
+  background:rgba(15,23,42,.98);
+  border:1px solid rgba(255,255,255,.12);
+  border-radius:22px;
+  padding:18px;
+  position: relative;
+}
+.modal-header{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:14px}
+.modal-header h3{font-size:20px}
+.close-x{background:none;border:none;color:#fff;font-size:26px;cursor:pointer;line-height:1}
+.detail-list{display:grid;gap:10px}
+.detail{background:rgba(255,255,255,.06);border-radius:14px;padding:12px}
+.detail label{margin:0 0 4px;display:block}
+.menu{position:fixed;display:none;z-index:10000;min-width:210px;background:#111827;border:1px solid rgba(255,255,255,.12);border-radius:14px;overflow:hidden;box-shadow:0 20px 40px rgba(0,0,0,.35)}
+.menu button{width:100%;background:none;border:none;color:#fff;padding:12px 14px;text-align:left;cursor:pointer;font-size:14px}
+.brand-text{
+  display:flex;
+  flex-direction:column;
+  gap:3px;
+}
+.menu button:hover{background:rgba(255,255,255,.08)}
+.split{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.hidden{display:none}
+.filter-bar{
+  display:flex;
+  gap:10px;
+  overflow-x:auto;
+  margin:10px 0 15px;
+  padding-bottom:5px;
+}
+
+.filter-btn{
+  padding:10px 14px;
+  border:none;
+  border-radius:12px;
+  background:rgba(255,255,255,0.08);
+  color:#fff;
+  font-weight:600;
+  cursor:pointer;
+  transition:0.2s;
+  white-space:nowrap;
+}
+
+.filter-btn.active{
+  background:linear-gradient(135deg,#2563eb,#1d4ed8);
+  box-shadow:0 0 15px rgba(37,99,235,0.6);
+  transform:scale(1.05);
+}
+
+.cards-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
+  gap:12px;
+}
+.topbar-fixed{
+  position:fixed;
+  top:0;
+  left:0;
+  right:0;
+  height:60px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:0 16px;
+  background:rgba(15,23,42,.85);
+  backdrop-filter:blur(12px);
+  border-bottom:1px solid rgba(255,255,255,.08);
+  z-index:10000;
+}
+
+.brand{
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+
+.logo-box{
+  width:38px;
+  height:38px;
+  border-radius:10px;
+  background:linear-gradient(135deg,#38bdf8,#8b5cf6);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-weight:800;
+}
+
+.brand-name{
+  font-weight:700;
+  font-size:16px;
+}
+
+.shop-status{
+  font-size:12px;
+  font-weight:600;
+  padding:4px 10px;
+  border-radius:999px;
+  display:inline-block;
+}
+.shop-open{
+  background:rgba(34,197,94,.2);
+  color:#22c55e;
+  border:1px solid rgba(34,197,94,.4);
+}
+
+.shop-closed{
+  background:rgba(239,68,68,.2);
+  color:#ef4444;
+  border:1px solid rgba(239,68,68,.4);
+}
+.right-info{
+  font-size:18px;
+}
+.danger:hover{background:#b91c1c}
+
+</style>
+</head>
+<body>
+    <div class="topbar-fixed">
+  
+  <div class="brand">
+    <div class="logo-box">K</div>
+    
+    <div class="brand-text">
+      <div class="brand-name">Kopyra</div>
+      <div class="shop-status shop-open" id="shopStatus">Shop Open</div>
+    </div>
+  </div>
+
+  <div class="right-info">
+    <i class="fa-solid fa-bell"></i>
+  </div>
+
+</div>
+<div class="app">
+  <div class="nav">
+    <button class="active" onclick="showTab('home')">Home</button>
+    <button onclick="showTab('settings')">Settings</button>
+  </div>
+
+  <div id="home" class="section active">
+    <div class="topbar">
+      <div>
+        <div class="title">Owner Dashboard</div>
+        <div class="stats" id="stats">Loading...</div>
+      </div>
+      <input class="search" id="search" placeholder="Search by name, code, phone, department, subject...">
+    </div>
+
+    <div class="filter-bar">
+  <button class="filter-btn active" onclick="setFilter('All', event)">All</button>
+<button class="filter-btn" onclick="setFilter('New', event)">New</button>
+<button class="filter-btn" onclick="setFilter('Pending', event)">Pending</button>
+<button class="filter-btn" onclick="setFilter('Accepted', event)">Accepted</button>
+<button class="filter-btn" onclick="setFilter('Completed', event)">Completed</button>
+<button class="filter-btn" onclick="setFilter('Delivered', event)">Delivered</button>
+<button class="filter-btn" onclick="setFilter('Rejected', event)">Rejected</button>
+</div>
+
+<div id="cardsContainer" class="cards-grid"></div>
+  </div>
+
+<div id="settings" class="section">
+
+  <div class="box" style="margin-top:10px">
+    <h3 style="margin-bottom:10px">Shop Status</h3>
+
+    <div class="row">
+      <div>
+        <label>Shop Status</label>
+        <select id="setShopStatus">
+          <option value="open">Open</option>
+          <option value="closed">Closed</option>
+        </select>
+      </div>
+    </div>
+
+    <div style="margin-top:12px">
+      <button class="btn primary" onclick="saveShopStatus()">Update Shop Status</button>
+    </div>
+   
+  </div>
+ <button class="btn danger" onclick="openReset()">Factory Reset</button>
+</div>
+</div>
+
+<div class="overlay" id="overlay">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>Customer Details</h3>
+      <button class="close-x" onclick="closeModal()">&times;</button>
+    </div>
+    <div class="detail-list" id="modalBody"></div>
+    <div class="box" style="margin-top:12px">
+  <h3 style="font-size:16px;margin-bottom:10px">Pricing</h3>
+  <div id="paymentModeText" style="margin:10px 0;font-weight:600;"></div>
+  <div class="row">
+  <div>
+    <label>Subject 1</label>
+    <input id="subj1" type="number" placeholder="Enter amount">
+  </div>
+
+  <div>
+    <label>Subject 2</label>
+    <input id="subj2" type="number" placeholder="Enter amount">
+  </div>
+
+  <div>
+    <label>Subject 3</label>
+    <input id="subj3" type="number" placeholder="Enter amount">
+  </div>
+</div>
+  <div class="detail-list" id="subjectsModal"></div>
+  
+  <div class="row">
+    <div><label>Total (Subject 1 + 2 + 3)</label><input id="mTotal" type="number" placeholder="0" disabled></div>
+    <div><label>Advance (50% of Total)</label><input id="mAdvance" type="number" disabled></div>
+  </div>
+  <div class="row">
+    <div><label>Extra Charges</label><input id="mExtra" type="number" placeholder="0" disabled></div>
+    <div><label>UPI ID</label><input id="mUpi" placeholder="upi id"></div>
+  </div>
+  
+  <div style="margin-top:12px">
+    <button class="btn primary" onclick="updatePrice()">Update Price</button>
+  </div>
+  
+  <div class="small">Advance is automatically 50% of Total. Extra charges enabled when status is Completed.</div>
+</div>
+  </div>
+</div>
+
+<div class="menu" id="menu">
+  <button onclick="setQuickStatus('Accepted')">Accept</button>
+  <button onclick="setQuickStatus('Rejected')">Reject</button>
+  <button onclick="setQuickStatus('Pending')">Pending</button>
+  <button onclick="setQuickStatus('Completed')">Completed</button>
+  <button onclick="setQuickStatus('Delivered')">Delivered</button>
+</div>
+
+<div class="overlay" id="reviewOverlay">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>Customer Review</h3>
+      <button class="close-x" onclick="closeReview()">&times;</button>
+    </div>
+    <div class="detail-list" id="reviewBody"></div>
+  </div>
+</div>
+<div class="overlay" id="resetOverlay">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>Factory Reset</h3>
+    </div>
+
+    <div class="detail-list">
+      <div class="detail">
+        <label>Warning</label>
+        <span>This will delete ALL customer data permanently.</span>
+      </div>
+
+      <div class="detail">
+        <label>Are you sure?</label>
+        <span>This action cannot be undone.</span>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:10px;margin-top:15px">
+      <button class="btn secondary" onclick="closeReset()">Cancel</button>
+      <button class="btn danger" onclick="confirmReset()">Yes, Reset</button>
+    </div>
+  </div>
+</div>
+<div id="toast" class="toast"></div>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+<script>
+const firebaseConfig={apiKey:"AIzaSyDuM6XcepcHyOiewj8zdnaB-6D8X2SWMM0",authDomain:"kopyra-34598.firebaseapp.com",databaseURL:"https://kopyra-34598-default-rtdb.firebaseio.com",projectId:"kopyra-34598"};
+firebase.initializeApp(firebaseConfig);
+const db=firebase.database();
+
+let bookings=[];
+let currentToken="";
+let currentBooking=null;
+
+function showTab(id){
+  document.querySelectorAll('.section').forEach(x=>x.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  document.querySelectorAll('.nav button').forEach(b=>b.classList.remove('active'));
+  if(id==='home') document.querySelectorAll('.nav button')[0].classList.add('active');
+  else document.querySelectorAll('.nav button')[1].classList.add('active');
+}
+
+function initials(name){
+  if(!name) return 'C';
+  return name.trim().split(' ').slice(0,2).map(x=>x[0]?.toUpperCase()||'').join('');
+}
+
+function loadBookings(){
+  db.ref('Bookings').on('value', snap=>{
+    bookings=[];
+    const data=snap.val()||{};
+    Object.keys(data).forEach(token=>bookings.push({token, ...data[token]}));
+    bookings.sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
+    renderAll();
+  });
+}
+
+function normalizeStatus(b){
+  return (b.status || b.permission || 'New');
+}
+
+function renderAll() {
+  const q = document.getElementById('search').value.toLowerCase().trim();
+  
+  const filtered = bookings.filter(b => {
+    const text = JSON.stringify(b).toLowerCase();
+    return !q || text.includes(q);
+  });
+  
+  const container = document.getElementById("cardsContainer");
+  container.innerHTML = "";
+  
+  let count = 0;
+  
+  filtered.forEach(b => {
+    const st = normalizeStatus(b);
+    
+    if (currentFilter !== "All" && st !== currentFilter) return;
+    
+    container.appendChild(cardHTML(b));
+    count++;
+  });
+  
+  document.getElementById('stats').textContent =
+    `${count} shown • ${bookings.length} total`;
+}
+
+// ✅ FIXED: Only ONE wrap.innerHTML assignment (removed duplicate)
+function cardHTML(b){
+  const wrap = document.createElement('div');
+  wrap.className = 'card';
+
+  const token = b.bookingToken || b.token;
+  const reviewStars = b.review?.rating ? '★'.repeat(Number(b.review.rating)) : 'No review';
+
+  // Escape token for HTML attribute
+  const escapedToken = String(token).replace(/"/g, '&quot;');
+
+  wrap.innerHTML = `
+    <div class="card-top">
+      <div class="logo">${initials(b.customerName)}</div>
+      <div class="meta">
+        <h4>${b.customerName || 'Unknown'}</h4>
+        <div class="code">${token || '-'}</div>
+      </div>
+    </div>
+
+    <div class="badges">
+      <div class="badge">${normalizeStatus(b)}</div>
+      <div class="badge">${b.department || '-'}</div>
+      <div class="badge">${b.semester || '-'}</div>
+    </div>
+
+    <div class="actions">
+      <button class="i-btn" data-action="info" data-token="${escapedToken}">i</button>
+      <button class="h-btn" data-action="menu" data-token="${escapedToken}">🔨</button>
+      <button class="s-btn" data-action="review" data-token="${escapedToken}">★</button>
+      <button class="danger" data-action="delete" data-token="${escapedToken}">🗑️</button>
+    </div>
+
+    <div class="small" style="margin-top:10px">${reviewStars}</div>
+  `;
+
+  return wrap;
+}
+
+function openDetails(b){
+  console.log("OPEN DETAILS CLICKED", b);
+  currentBooking=b;
+  applyPricingRules(b.status || "New");
+  currentToken=b.bookingToken || b.token;
+  const subs=Array.isArray(b.subjects)?b.subjects:[];
+  let workHtml = subs.length ? subs.map((s,i)=>`
+    <div class="detail">
+      <label>Subject ${i+1}</label>
+      <span>
+        Name: ${s.name || '-'}<br>
+        Type: ${s.type || '-'}<br>
+        Binding: ${s.binding || '-'}<br>
+        Page Number: ${s.pageNumber || '-'}<br>
+        Border: ${s.border || '-'}<br>
+        Work: ${s.workType || '-'}<br>
+        Urgent: ${s.urgent || '-'}
+      </span>
+    </div>
+  `).join('') : `<div class="detail"><label>Work Details</label><span>-</span></div>`;
+
+  document.getElementById('modalBody').innerHTML=`
+    <div class="detail"><label>Name</label><span>${b.customerName || '-'}</span></div>
+    <div class="detail"><label>WhatsApp</label><span>${b.whatsapp || '-'}</span></div>
+    <div class="detail"><label>Department</label><span>${b.department || '-'}</span></div>
+    <div class="detail"><label>Section</label><span>${b.section || '-'}</span></div>
+    <div class="detail"><label>Roll Number</label><span>${b.rollNumber || '-'}</span></div>
+    <div class="detail"><label>Semester</label><span>${b.semester || '-'}</span></div>
+    <div class="detail"><label>Institute</label><span>${b.instituteName || '-'}</span></div>
+    <div class="detail"><label>Address</label><span>${b.instituteAddress || '-'}</span></div>
+    <div class="detail"><label>Token</label><span>${b.bookingToken || b.token || '-'}</span></div>
+    <div class="detail"><label>Status</label><span>${normalizeStatus(b)}</span></div>
+    ${workHtml}
+  `;
+  
+  document.getElementById('mTotal').value = b.totalAmount || '';
+  document.getElementById('mAdvance').value = b.totalAmount ? Math.round(Number(b.totalAmount)*0.5) : '';
+  document.getElementById('mExtra').value = b.extraCharges || 0;
+  document.getElementById('mUpi').value = b.upiId || document.getElementById('setUpi').value || '';
+  const overlay = document.getElementById('overlay');
+overlay.style.display = 'flex';
+overlay.style.visibility = 'visible';
+overlay.style.opacity = '1';
+  updatePricingLock(normalizeStatus(b));
+  
+}
+
+function closeModal(){ document.getElementById('overlay').style.display='none'; }
+
+function openMenu(e, token){
+  e.stopPropagation();
+  currentToken=token;
+  const m=document.getElementById('menu');
+  m.style.display='block';
+  m.style.left=Math.min(e.clientX,window.innerWidth-220)+'px';
+  m.style.top=Math.min(e.clientY,window.innerHeight-240)+'px';
+}
+
+function setQuickStatus(status){
+  if(!currentToken) return;
+  db.ref('Bookings/'+currentToken).update({status, updatedAt:Date.now()});
+  document.getElementById('menu').style.display='none';
+  currentToken='';
+  updatePricingLock(status);
+}
+
+function updatePrice(){
+  if(!currentBooking) return;
+  const token = currentBooking.bookingToken || currentBooking.token;
+  
+  subject1 = Number(document.getElementById('subj1')?.value || 0);
+  subject2 = Number(document.getElementById('subj2')?.value || 0);
+  subject3 = Number(document.getElementById('subj3')?.value || 0);
+  
+  const total = subject1 + subject2 + subject3;
+  const extra = Number(document.getElementById('mExtra').value || 0);
+  const upi = document.getElementById('mUpi').value.trim();
+  const advance = Math.round(total * 0.5);
+  const final = advance + extra;
+  
+  const now = new Date();
+  const hours = now.getHours() % 12 || 12;
+  const minutes = String(now.getMinutes()).padStart(2, '0');
+  const ampm = now.getHours() >= 12 ? 'PM' : 'AM';
+  const dateTime = `${now.toLocaleDateString()} ${hours}:${minutes} ${ampm}`;
+  
+  db.ref('Bookings/'+token).update({
+    subject1: subject1,
+    subject2: subject2,
+    subject3: subject3,
+    totalAmount: total,
+    advanceAmount: advance,
+    extraCharges: extra,
+    finalAmount: final,
+    upiId: upi,
+    paymentVisible: true,
+    paymentNote: `Advance: ${advance}, Extra: ${extra}, Total: ${total}, Final: ${final}`,
+    paymentDateTime: dateTime,
+    updatedAt: Date.now()
+  });
+  
+  document.getElementById('mAdvance').value = advance;
+  showDialog({
+  title:"Success",
